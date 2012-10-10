@@ -1,0 +1,78 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>   
+    </head>
+    <body>
+        <h1>Socket IO Test</h1>
+        <div id="chat">
+          <div id="board"></div>
+          <input type="text" id="text"></input>&nbsp;<button id="send">Send</button>
+        </div>
+    </body>
+    <script type="text/javascript">
+      $(document).ready(function(){
+        var name = 'u' + Math.round(Math.random()*10)+1;
+        document.title = name;
+        var chat = new Chat();
+        
+        chat.connect(name);
+
+        $('#text').bind('keypress', function(e) {
+          if(e.keyCode==13) sendMsg();
+        });
+        
+        $("#send").click(function() {
+          sendMsg();
+        });
+
+        function sendMsg(){
+          var m = $("#text").val();
+          $("#text").val("");
+          chat.send(m);
+        }
+      });
+      
+      function Chat(){
+        var socket, _that = this;
+
+        this.connect = function(user){ 
+          socket = io.connect();
+
+          socket.on('connect',function (data) {
+            socket.emit('join', user, function(response){
+              append(response);
+            });
+            startChatting();
+          });
+          
+          socket.on("message", function(msg, p, c){
+            append(msg);
+          });
+
+          socket.on('disconnect', function(msg) {
+            append("I'm disconnected");
+            console.log(msg);
+          });
+        };
+        
+        this.send = function(msg) {
+          socket.emit("message", msg, function(response) {
+            append(response);
+          }); 
+        };
+
+        function append(msg) {
+          $("#board").append("<div>" + msg + "</div>");
+          $('#board div:last-child')[0].scrollIntoView();
+        }
+
+        var msgCounter = 0;
+        function startChatting() {
+          _that.send('message ' + msgCounter++);
+          setTimeout(arguments.callee, 0.5*1000);
+        }
+      }
+    </script>
+</html>
