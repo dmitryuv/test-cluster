@@ -1,7 +1,5 @@
 //app.js Socket IO Test
-var redis = require('redis'),
-    //redis = require('socket.io/node_modules/redis'),
-    io = require('socket.io'),
+var io = require('socket.io'),
     cluster = require('cluster');
 
 var MAX_NODES = 4;
